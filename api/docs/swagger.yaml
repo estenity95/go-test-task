@@ -1,0 +1,277 @@
+basePath: /api/v1
+definitions:
+  respond.Problem:
+    properties:
+      detail:
+        type: string
+      errors:
+        additionalProperties:
+          type: string
+        type: object
+      instance:
+        type: string
+      status:
+        type: integer
+      title:
+        type: string
+      type:
+        type: string
+    type: object
+  subscription.CreateReq:
+    properties:
+      end_date:
+        type: string
+      price:
+        minimum: 0
+        type: integer
+      service_name:
+        type: string
+      start_date:
+        type: string
+      user_id:
+        type: string
+    required:
+    - service_name
+    - start_date
+    - user_id
+    type: object
+  subscription.Resp:
+    properties:
+      created_at:
+        type: string
+      end_date:
+        type: string
+      id:
+        type: integer
+      price:
+        type: integer
+      service_name:
+        type: string
+      start_date:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  subscription.UpdateReq:
+    properties:
+      end_date:
+        type: string
+      price:
+        minimum: 0
+        type: integer
+      service_name:
+        type: string
+      start_date:
+        type: string
+      user_id:
+        type: string
+    required:
+    - service_name
+    - start_date
+    - user_id
+    type: object
+info:
+  contact: {}
+  description: REST API для управления подписками.
+  title: Subscriptions API
+  version: "1.0"
+paths:
+  /subscriptions:
+    get:
+      description: Returns a paginated list of subscriptions
+      parameters:
+      - default: 50
+        description: items per page
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/subscription.Resp'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/respond.Problem'
+      summary: List subscriptions
+      tags:
+      - subscriptions
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/subscription.CreateReq'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/subscription.Resp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/respond.Problem'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/respond.Problem'
+      summary: Create subscription
+      tags:
+      - subscriptions
+  /subscriptions/{id}:
+    delete:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: no content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/respond.Problem'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/respond.Problem'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/respond.Problem'
+      summary: Delete subscription
+      tags:
+      - subscriptions
+    get:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/subscription.Resp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/respond.Problem'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/respond.Problem'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/respond.Problem'
+      summary: Read subscription
+      tags:
+      - subscriptions
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/subscription.UpdateReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/subscription.Resp'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/respond.Problem'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/respond.Problem'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/respond.Problem'
+      summary: Update subscription
+      tags:
+      - subscriptions
+  /subscriptions/summary:
+    get:
+      description: Sums `price` for all subscriptions overlapping [from..to]; optional
+        filters by user_id and service_name
+      parameters:
+      - description: start of period (RFC3339 | 2006-01-02 | 2006-01)
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: end of period   (RFC3339 | 2006-01-02 | 2006-01)
+        in: query
+        name: to
+        required: true
+        type: string
+      - description: user UUID filter
+        in: query
+        name: user_id
+        type: string
+      - description: service name filter
+        in: query
+        name: service_name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'example: {\"total\": 2397}'
+          schema:
+            additionalProperties:
+              format: int64
+              type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/respond.Problem'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/respond.Problem'
+      summary: Sum subscription prices over a period
+      tags:
+      - subscriptions
+swagger: "2.0"
