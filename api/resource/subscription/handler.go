@@ -14,20 +14,19 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
-	"gorm.io/gorm"
 )
 
 type API struct {
 	logger     *zerolog.Logger
 	validator  *validator.Validate
-	repository *Repo
+	repository Repository
 }
 
-func New(logger *zerolog.Logger, validator *validator.Validate, db *gorm.DB) *API {
+func New(logger *zerolog.Logger, validator *validator.Validate, repository Repository) *API {
 	return &API{
 		logger:     logger,
 		validator:  validator,
-		repository: NewRepo(db),
+		repository: repository,
 	}
 }
 

@@ -9,16 +9,15 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog"
 	httpSwagger "github.com/swaggo/http-swagger"
-	"gorm.io/gorm"
 )
 
-func NewRouter(l *zerolog.Logger, v *validator.Validate, db *gorm.DB) *chi.Mux {
+func NewRouter(l *zerolog.Logger, v *validator.Validate, repository subscription.Repository) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(chimw.RequestID)
 	r.Use(apimw.ContentTypeJSON)
 
-	api := subscription.New(l, v, db)
+	api := subscription.New(l, v, repository)
 
 	r.Get("/swagger/*", httpSwagger.WrapHandler)
 	r.Get("/healthz", health.Read)

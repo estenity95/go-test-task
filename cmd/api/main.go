@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
 	_ "github.com/estenity95/go-test-task/api/docs"
+	"github.com/estenity95/go-test-task/api/resource/subscription"
 	"github.com/estenity95/go-test-task/api/router"
 	"github.com/estenity95/go-test-task/api/server"
 	"github.com/estenity95/go-test-task/internal/config"
@@ -51,13 +51,12 @@ func main() {
 		return
 	}
 
-	r := router.NewRouter(logger, validator, db)
-
-	addr := ":" + strconv.Itoa(cfg.Server.Port)
-	server := server.New(addr, r)
+	repo := subscription.NewRepo(db)
+	r := router.NewRouter(logger, validator, repo)
+	server := server.New(r, cfg)
 
 	go func() {
-		logger.Info().Str("addr", addr).Msg("http server starting")
+		logger.Info().Msg("http server starting")
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) && err != nil {
 			logger.Error().Err(err).Msg("http server failed")
 			os.Exit(1)

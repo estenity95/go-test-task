@@ -2,15 +2,17 @@ package server
 
 import (
 	"net/http"
-	"time"
+	"strconv"
+
+	"github.com/estenity95/go-test-task/internal/config"
 )
 
-func New(addr string, handler http.Handler) *http.Server {
+func New(handler http.Handler, cfg *config.AppConfig) *http.Server {
 	return &http.Server{
-		Addr:         addr,
+		Addr:         ":" + strconv.Itoa(cfg.Server.Port),
 		Handler:      handler,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		ReadTimeout:  cfg.Server.ReadTimeout,
+		WriteTimeout: cfg.Server.WriteTimeout,
+		IdleTimeout:  cfg.Server.IdleTimeout,
 	}
 }

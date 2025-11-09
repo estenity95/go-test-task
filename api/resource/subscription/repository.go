@@ -9,6 +9,15 @@ import (
 	"gorm.io/gorm"
 )
 
+type Repository interface {
+	List(ctx context.Context, limit, offset int) (Subscriptions, error)
+	Create(ctx context.Context, s *Subscription) (*Subscription, error)
+	Get(ctx context.Context, id int64) (*Subscription, error)
+	Update(ctx context.Context, s *Subscription) (int64, error)
+	Delete(ctx context.Context, id int64) error
+	Summary(ctx context.Context, q SummaryQuery) (int64, error)
+}
+
 type Repo struct {
 	db *gorm.DB
 }
@@ -61,9 +70,23 @@ func (r *Repo) Get(ctx context.Context, id int64) (*Subscription, error) {
 }
 
 func (r *Repo) Update(ctx context.Context, s *Subscription) (int64, error) {
-	res := r.db.WithContext(ctx).Save(s)
+	res := r.db.WithContext(ctx).Model(&Subscription{}).
+		Where("id = ?", s.ID).
+		Updates(map[string]any{
+			"service_name": s.ServiceName,
+			"price":        s.Price,
+			"user_id":      s.UserID,
+			"start_month":  s.StartMonth,
+			"end_month":    s.EndMonth,
+			"updated_at":   time.Now().UTC(),
+		})
+
 	if res.Error != nil {
 		return 0, res.Error
+	}
+
+	if res.RowsAffected == 0 {
+		return 0, ErrNotFound
 	}
 
 	return res.RowsAffected, nil
